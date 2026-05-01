@@ -12,7 +12,7 @@
             --text-main: #4A4A4A;
         }
         body {
-            font-family: sans-serif; background-color: var(--bg-color);
+            font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color);
             margin: 0; padding: 20px; display: flex; justify-content: center;
         }
         .container {
@@ -20,38 +20,41 @@
             padding: 25px; border-radius: 25px; margin-top: 20px;
         }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .settings-btn { background: white; border: 1px solid #ccc; padding: 10px; border-radius: 12px; cursor: pointer; font-size: 20px; }
         .app-title { font-size: 24px; color: var(--text-main); margin: 0; }
-        .lang-select { padding: 5px; border-radius: 5px; border: 1px solid #ccc; }
+        .lang-select { padding: 5px; border-radius: 8px; border: 1px solid #ccc; background: white; }
         
         .add-bar {
             background-color: var(--green-btn); color: var(--text-main);
-            padding: 15px; border-radius: 20px; display: flex; justify-content: flex-end;
+            padding: 15px; border-radius: 20px; display: flex; justify-content: center;
             align-items: center; cursor: pointer; margin-bottom: 20px; font-weight: bold;
+            font-size: 18px;
         }
         .activity-item {
             background: white; margin-bottom: 12px; padding: 15px;
             border-radius: 20px; display: flex; justify-content: space-between;
             align-items: center; border: 1px solid #ccc;
         }
-        .left { display: flex; align-items: center; gap: 15px; font-size: 18px; font-weight: 500; }
+        .left { display: flex; flex-direction: column; gap: 5px; }
+        .activity-info { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 500; }
+        .time-tag { font-size: 13px; color: #666; background: #eee; padding: 2px 8px; border-radius: 10px; width: fit-content; }
+        
         .right { display: flex; align-items: center; gap: 10px; color: var(--text-main); }
-        .everyday { font-size: 14px; display: flex; align-items: center; gap: 3px; }
         .delete-icon { color: #8F6A6D; cursor: pointer; font-size: 20px; }
-        .active-icon { opacity: 1; cursor: pointer; }
-        .inactive-icon { opacity: 0.3; cursor: pointer; }
+        .icon-btn { cursor: pointer; font-size: 18px; transition: 0.3s; }
+        .inactive { opacity: 0.3; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <button class="settings-btn" onclick="alert('Settings feature coming soon!')">⚙️</button>
-        <h1 class="app-title" id="title">Activity Hub</h1>
         <select class="lang-select" id="lang" onchange="updateLang()">
-            <option value="ml">ML</option>
-            <option value="en">EN</option>
+            <option value="ml">മലയാളം</option>
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
         </select>
+        <h1 class="app-title" id="title">Activity Hub</h1>
+        <span>⚙️</span>
     </div>
 
     <div class="add-bar" onclick="add()" id="addTxt">
@@ -60,12 +63,14 @@
 
     <div id="list">
         <div class="activity-item">
-            <div class="left"><span>📖</span> <span>വായന</span></div>
+            <div class="left">
+                <div class="activity-info"><span>📖</span> <span>വായന</span></div>
+                <div class="time-tag">08:00 AM</div>
+            </div>
             <div class="right">
-                <span class="active-icon" onclick="this.className=(this.className=='active-icon'?'inactive-icon':'active-icon')">🔔</span>
-                <span class="active-icon" onclick="this.className=(this.className=='active-icon'?'inactive-icon':'active-icon')">🔊</span>
-                <div class="everyday">everyday <span>∨</span></div>
-                <span class="delete-icon" onclick="this.closest('.activity-item').remove()">🗑️</span>
+                <span class="icon-btn" onclick="this.classList.toggle('inactive')">🔔</span>
+                <span class="icon-btn" onclick="this.classList.toggle('inactive')">🔊</span>
+                <span class="delete-icon" onclick="deleteItem(this)">🗑️</span>
             </div>
         </div>
     </div>
@@ -73,33 +78,45 @@
 
 <script>
     const dictionary = {
-        ml: { title: "Activity Hub", add: "പുതിയ പ്രവർത്തനം ചേർക്കുക +", p1: "പ്രവർത്തനം:", p2: "ഇമോജി:" },
-        en: { title: "Activity Hub", add: "Add New Activity +", p1: "Activity Name:", p2: "Emoji:" }
+        ml: { title: "Activity Hub", add: "പുതിയ പ്രവർത്തനം ചേർക്കുക +", p1: "പ്രവർത്തനം:", p2: "സമയം (ഉദാ: 10:00 AM):", p3: "ഇമോജി:", del: "ഇത് ഒഴിവാക്കട്ടെ?" },
+        en: { title: "Activity Hub", add: "Add New Activity +", p1: "Activity:", p2: "Time (e.g. 10:00 AM):", p3: "Emoji:", del: "Remove this activity?" },
+        ar: { title: "مركز النشاط", add: "+ إضافة نشاط جديد", p1: "النشاط:", p2: "الوقت:", p3: "رمز تعبيري:", del: "هل تريد حذف هذا؟" }
     };
 
     function updateLang() {
         let l = document.getElementById('lang').value;
         document.getElementById('title').innerText = dictionary[l].title;
         document.getElementById('addTxt').innerText = dictionary[l].add;
+        document.body.style.direction = (l === 'ar') ? 'rtl' : 'ltr';
     }
 
     function add() {
         let l = document.getElementById('lang').value;
         let n = prompt(dictionary[l].p1);
         if(!n) return;
-        let i = prompt(dictionary[l].p2, "📝");
+        let t = prompt(dictionary[l].p2, "09:00 AM");
+        let i = prompt(dictionary[l].p3, "📝");
 
         let div = document.createElement('div');
         div.className = 'activity-item';
         div.innerHTML = `
-            <div class="left"><span>${i}</span> <span>${n}</span></div>
+            <div class="left">
+                <div class="activity-info"><span>${i}</span> <span>${n}</span></div>
+                <div class="time-tag">${t}</div>
+            </div>
             <div class="right">
-                <span class="active-icon" onclick="this.className=(this.className=='active-icon'?'inactive-icon':'active-icon')">🔔</span>
-                <span class="active-icon" onclick="this.className=(this.className=='active-icon'?'inactive-icon':'active-icon')">🔊</span>
-                <div class="everyday">everyday <span>∨</span></div>
-                <span class="delete-icon" onclick="this.closest('.activity-item').remove()">🗑️</span>
+                <span class="icon-btn" onclick="this.classList.toggle('inactive')">🔔</span>
+                <span class="icon-btn" onclick="this.classList.toggle('inactive')">🔊</span>
+                <span class="delete-icon" onclick="deleteItem(this)">🗑️</span>
             </div>`;
         document.getElementById('list').appendChild(div);
+    }
+
+    function deleteItem(btn) {
+        let l = document.getElementById('lang').value;
+        if(confirm(dictionary[l].del)) {
+            btn.closest('.activity-item').remove();
+        }
     }
 </script>
 </body>
