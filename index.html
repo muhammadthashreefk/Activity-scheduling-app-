@@ -17,12 +17,23 @@
         }
         .container {
             width: 100%; max-width: 500px; background-color: var(--container-bg);
-            padding: 25px; border-radius: 25px; margin-top: 20px;
+            padding: 25px; border-radius: 25px; margin-top: 20px; position: relative;
         }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .app-title { font-size: 24px; color: var(--text-main); margin: 0; }
-        .lang-select { padding: 5px; border-radius: 8px; border: 1px solid #ccc; background: white; }
+        .app-title { font-size: 22px; color: var(--text-main); margin: 0; font-weight: bold; }
+        .header-icons { display: flex; gap: 15px; align-items: center; }
+        .lang-select { padding: 5px; border-radius: 8px; border: 1px solid #ccc; background: white; font-size: 12px; }
         
+        /* മെനു സ്റ്റൈൽ */
+        .menu-dropdown {
+            display: none; position: absolute; right: 25px; top: 60px;
+            background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 100; min-width: 120px;
+        }
+        .menu-dropdown div { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; }
+        .menu-dropdown div:last-child { border-bottom: none; }
+        .menu-dropdown div:hover { background: #f5f5f5; }
+
         .add-bar {
             background-color: var(--green-btn); color: var(--text-main);
             padding: 15px; border-radius: 20px; display: flex; justify-content: center;
@@ -35,13 +46,15 @@
             align-items: center; border: 1px solid #ccc;
         }
         .left { display: flex; flex-direction: column; gap: 5px; }
-        .activity-info { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 500; }
-        .time-tag { font-size: 13px; color: #666; background: #eee; padding: 2px 8px; border-radius: 10px; width: fit-content; }
+        .activity-info { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; color: var(--text-main); }
+        .time-row { display: flex; align-items: center; gap: 8px; }
+        .time-tag { font-size: 12px; color: white; background: #666; padding: 2px 10px; border-radius: 10px; }
+        .everyday-tag { font-size: 12px; color: #888; }
         
-        .right { display: flex; align-items: center; gap: 10px; color: var(--text-main); }
+        .right { display: flex; align-items: center; gap: 12px; }
         .delete-icon { color: #8F6A6D; cursor: pointer; font-size: 20px; }
-        .icon-btn { cursor: pointer; font-size: 18px; transition: 0.3s; }
-        .inactive { opacity: 0.3; }
+        .icon-btn { cursor: pointer; font-size: 20px; transition: 0.3s; }
+        .inactive { opacity: 0.2; filter: grayscale(1); }
     </style>
 </head>
 <body>
@@ -49,38 +62,39 @@
 <div class="container">
     <div class="header">
         <select class="lang-select" id="lang" onchange="updateLang()">
-            <option value="ml">മലയാളം</option>
-            <option value="en">English</option>
-            <option value="ar">العربية</option>
+            <option value="ml">ML</option>
+            <option value="en">EN</option>
+            <option value="ar">AR</option>
         </select>
         <h1 class="app-title" id="title">Activity Hub</h1>
-        <span>⚙️</span>
+        <div class="header-icons">
+            <span class="icon-btn" onclick="showHistory()">⚙️</span>
+            <span class="icon-btn" onclick="toggleMenu()">⋮</span>
+        </div>
+    </div>
+
+    <div id="menuBox" class="menu-dropdown">
+        <div onclick="alert('Reporting...')">Report</div>
+        <div onclick="alert('Opening Feedback...')">Feedback</div>
     </div>
 
     <div class="add-bar" onclick="add()" id="addTxt">
         പുതിയ പ്രവർത്തനം ചേർക്കുക +
     </div>
 
-    <div id="list">
-        <div class="activity-item">
-            <div class="left">
-                <div class="activity-info"><span>📖</span> <span>വായന</span></div>
-                <div class="time-tag">08:00 AM</div>
-            </div>
-            <div class="right">
-                <span class="icon-btn" onclick="this.classList.toggle('inactive')">🔔</span>
-                <span class="icon-btn" onclick="this.classList.toggle('inactive')">🔊</span>
-                <span class="delete-icon" onclick="deleteItem(this)">🗑️</span>
-            </div>
-        </div>
-    </div>
+    <div id="list"></div>
 </div>
 
 <script>
     const dictionary = {
-        ml: { title: "Activity Hub", add: "പുതിയ പ്രവർത്തനം ചേർക്കുക +", p1: "പ്രവർത്തനം:", p2: "സമയം (ഉദാ: 10:00 AM):", p3: "ഇമോജി:", del: "ഇത് ഒഴിവാക്കട്ടെ?" },
-        en: { title: "Activity Hub", add: "Add New Activity +", p1: "Activity:", p2: "Time (e.g. 10:00 AM):", p3: "Emoji:", del: "Remove this activity?" },
-        ar: { title: "مركز النشاط", add: "+ إضافة نشاط جديد", p1: "النشاط:", p2: "الوقت:", p3: "رمز تعبيري:", del: "هل تريد حذف هذا؟" }
+        ml: { title: "Activity Hub", add: "പുതിയ പ്രവർത്തനം ചേർക്കുക +", p1: "പ്രവർത്തനം:", p2: "സമയം:", p3: "ഇമോജി:", del: "ഇത് ഒഴിവാക്കട്ടെ?" },
+        en: { title: "Activity Hub", add: "Add Activity +", p1: "Activity Name:", p2: "Time:", p3: "Emoji:", del: "Remove this?" },
+        ar: { title: "مركز النشاط", add: "+ إضافة نشاط", p1: "النشاط:", p2: "الوقت:", p3: "رمز:", del: "حذف؟" }
+    };
+
+    // ആപ്പ് ലോഡ് ചെയ്യുമ്പോൾ ഡാറ്റ എടുക്കുക
+    window.onload = function() {
+        loadData();
     };
 
     function updateLang() {
@@ -90,6 +104,11 @@
         document.body.style.direction = (l === 'ar') ? 'rtl' : 'ltr';
     }
 
+    function toggleMenu() {
+        let m = document.getElementById('menuBox');
+        m.style.display = (m.style.display == 'block') ? 'none' : 'block';
+    }
+
     function add() {
         let l = document.getElementById('lang').value;
         let n = prompt(dictionary[l].p1);
@@ -97,25 +116,77 @@
         let t = prompt(dictionary[l].p2, "09:00 AM");
         let i = prompt(dictionary[l].p3, "📝");
 
-        let div = document.createElement('div');
-        div.className = 'activity-item';
-        div.innerHTML = `
-            <div class="left">
-                <div class="activity-info"><span>${i}</span> <span>${n}</span></div>
-                <div class="time-tag">${t}</div>
-            </div>
-            <div class="right">
-                <span class="icon-btn" onclick="this.classList.toggle('inactive')">🔔</span>
-                <span class="icon-btn" onclick="this.classList.toggle('inactive')">🔊</span>
-                <span class="delete-icon" onclick="deleteItem(this)">🗑️</span>
-            </div>`;
-        document.getElementById('list').appendChild(div);
+        const activity = { name: n, time: t, emoji: i, bell: true, sound: true };
+        saveToLocal(activity);
+        renderList();
     }
 
-    function deleteItem(btn) {
+    function saveToLocal(obj) {
+        let data = JSON.parse(localStorage.getItem('myActivities')) || [];
+        data.push(obj);
+        localStorage.setItem('myActivities', JSON.stringify(data));
+    }
+
+    function loadData() {
+        renderList();
+    }
+
+    function renderList() {
+        let listDiv = document.getElementById('list');
+        listDiv.innerHTML = '';
+        let data = JSON.parse(localStorage.getItem('myActivities')) || [];
+
+        data.forEach((item, index) => {
+            let div = document.createElement('div');
+            div.className = 'activity-item';
+            div.innerHTML = `
+                <div class="left">
+                    <div class="activity-info"><span>${item.emoji}</span> <span>${item.name}</span></div>
+                    <div class="time-row">
+                        <div class="time-tag">${item.time}</div>
+                        <div class="everyday-tag">everyday ∨</div>
+                    </div>
+                </div>
+                <div class="right">
+                    <span class="icon-btn ${item.bell?'':'inactive'}" onclick="toggleFeature(${index}, 'bell')">🔔</span>
+                    <span class="icon-btn ${item.sound?'':'inactive'}" onclick="toggleFeature(${index}, 'sound')">🔊</span>
+                    <span class="delete-icon" onclick="deleteItem(${index})">🗑️</span>
+                </div>`;
+            listDiv.appendChild(div);
+        });
+    }
+
+    function toggleFeature(index, feature) {
+        let data = JSON.parse(localStorage.getItem('myActivities'));
+        data[index][feature] = !data[index][feature];
+        localStorage.setItem('myActivities', JSON.stringify(data));
+        renderList();
+    }
+
+    function deleteItem(index) {
         let l = document.getElementById('lang').value;
         if(confirm(dictionary[l].del)) {
-            btn.closest('.activity-item').remove();
+            let data = JSON.parse(localStorage.getItem('myActivities'));
+            data.splice(index, 1);
+            localStorage.setItem('myActivities', JSON.stringify(data));
+            renderList();
+        }
+    }
+
+    function showHistory() {
+        let data = JSON.parse(localStorage.getItem('myActivities')) || [];
+        if(data.length == 0) {
+            alert("ചരിത്രം ലഭ്യമല്ല (History is empty)");
+        } else {
+            let h = data.map(i => i.name + " (" + i.time + ")").join("\n");
+            alert("സേവ് ചെയ്ത വിവരങ്ങൾ:\n" + h);
+        }
+    }
+
+    // പുറത്ത് ക്ലിക്ക് ചെയ്താൽ മെനു അടയാൻ
+    window.onclick = function(event) {
+        if (!event.target.matches('.icon-btn')) {
+            document.getElementById('menuBox').style.display = 'none';
         }
     }
 </script>
