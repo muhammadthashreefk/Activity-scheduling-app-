@@ -2,251 +2,105 @@
 <html lang="ml">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Activity Hub</title>
-    <link rel="icon" href="https://img.icons8.com/color/48/hub.png">
     <style>
-        /* അടിസ്ഥാന സ്റ്റൈൽ */
+        :root {
+            --bg-color: #E6E8EA;
+            --container-bg: #DDE0E2;
+            --green-btn: #8CA98F;
+            --text-main: #4A4A4A;
+        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            background-color: #E6E8EA; /* സ്ക്രീനിലുള്ള ബാക്ക്ഗ്രൗണ്ട് */
-            display: flex;
-            justify-content: center;
-            align-items: start;
-            min-height: 100vh;
-            padding: 20px;
+            font-family: sans-serif; background-color: var(--bg-color);
+            margin: 0; padding: 20px; display: flex; justify-content: center;
         }
-
-        /* പ്രധാന കണ്ടെയിനർ */
-        .hub-container {
-            width: 100%;
-            max-width: 1100px;
-            background-color: #DDE0E2;
-            padding: 20px 40px;
-            border-radius: 20px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
-            margin-top: 50px;
+        .container {
+            width: 100%; max-width: 500px; background-color: var(--container-bg);
+            padding: 25px; border-radius: 25px; margin-top: 20px;
         }
-
-        /* മുകളിലെ ഹെഡർ */
-        .hub-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .settings-btn { background: white; border: 1px solid #ccc; padding: 10px; border-radius: 12px; cursor: pointer; font-size: 20px; }
+        .app-title { font-size: 24px; color: var(--text-main); margin: 0; }
+        .lang-select { padding: 5px; border-radius: 5px; border: 1px solid #ccc; }
+        
+        .add-bar {
+            background-color: var(--green-btn); color: var(--text-main);
+            padding: 15px; border-radius: 20px; display: flex; justify-content: flex-end;
+            align-items: center; cursor: pointer; margin-bottom: 20px; font-weight: bold;
         }
-
-        /* ഗിയർ (Settings) ഐക്കൺ */
-        .settings-btn {
-            background-color: white;
-            padding: 15px;
-            border-radius: 12px;
-            border: 2px solid #ccc;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .settings-btn:hover { background-color: #f0f0f0; }
-
-        .settings-icon {
-            width: 28px;
-            height: 28px;
-        }
-
-        /* "Activity Hub" ടൈറ്റിൽ */
-        .app-title {
-            font-size: 30px;
-            color: #4A4A4A;
-            margin: 0;
-            font-weight: 600;
-        }
-
-        /* പുതിയ പ്രവർത്തനം ചേർക്കുക (Button bar) */
-        .add-activity-bar {
-            background-color: #8CA98F; /* ആ പച്ച നിറം */
-            color: #4A4A4A;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            padding: 15px 25px;
-            border-radius: 20px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: all 0.3s;
-        }
-
-        .add-activity-bar:hover { background-color: #7E9D82; }
-
-        .add-text {
-            font-size: 20px;
-            margin-right: 15px;
-            font-weight: 500;
-        }
-
-        .add-icon {
-            font-size: 32px;
-            line-height: 1;
-        }
-
-        /* ഓരോ പ്രവർത്തനത്തിന്റെയും വരി (Activity Row) */
         .activity-item {
-            background-color: white;
-            color: #4A4A4A;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 25px;
-            border-radius: 20px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
+            background: white; margin-bottom: 12px; padding: 15px;
+            border-radius: 20px; display: flex; justify-content: space-between;
+            align-items: center; border: 1px solid #ccc;
         }
-
-        .left-part {
-            display: flex;
-            align-items: center;
-        }
-
-        /* വായന ഐക്കൺ (Book) */
-        .book-icon {
-            font-size: 30px;
-            margin-right: 20px;
-            color: #4A4A4A;
-        }
-
-        /* പ്രവർത്തനത്തിന്റെ പേര് */
-        .activity-name {
-            font-size: 22px;
-            font-weight: 500;
-        }
-
-        /* വലതുവശത്തെ ഐക്കണുകൾ */
-        .right-part {
-            display: flex;
-            align-items: center;
-            gap: 15px; /* ഐക്കണുകൾ തമ്മിലുള്ള സ്പേസ് */
-        }
-
-        /* കോമൺ ഐക്കൺ സ്റ്റൈൽ */
-        .action-icon {
-            font-size: 26px;
-            cursor: pointer;
-            color: #4A4A4A;
-        }
-
-        /* "everyday" ഡ്രോപ്പ്ഡൗൺ */
-        .dropdown-part {
-            display: flex;
-            align-items: center;
-            font-size: 18px;
-        }
-
-        .dropdown-text { margin-right: 5px; }
-
-        /* ഡിലീറ്റ് ഐക്കൺ */
-        .delete-btn { color: #8F6A6D; /* ആ ചുവപ്പ്/തവിട്ട് നിറം */ }
-        .delete-btn:hover { color: #a51c1c; }
-
+        .left { display: flex; align-items: center; gap: 15px; font-size: 18px; font-weight: 500; }
+        .right { display: flex; align-items: center; gap: 10px; color: var(--text-main); }
+        .everyday { font-size: 14px; display: flex; align-items: center; gap: 3px; }
+        .delete-icon { color: #8F6A6D; cursor: pointer; font-size: 20px; }
+        .active-icon { opacity: 1; cursor: pointer; }
+        .inactive-icon { opacity: 0.3; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="hub-container">
-        <div class="hub-header">
-            <button class="settings-btn" id="settingsBtn">
-                <img src="https://img.icons8.com/ios/50/settings--v1.png" alt="settings" class="settings-icon"/>
-            </button>
-            
-            <h1 class="app-title">Activity Hub</h1>
-        </div>
+<div class="container">
+    <div class="header">
+        <button class="settings-btn" onclick="alert('Settings feature coming soon!')">⚙️</button>
+        <h1 class="app-title" id="title">Activity Hub</h1>
+        <select class="lang-select" id="lang" onchange="updateLang()">
+            <option value="ml">ML</option>
+            <option value="en">EN</option>
+        </select>
+    </div>
 
-        <div class="add-activity-bar" id="addActivityBtn">
-            <span class="add-text">പുതിയ പ്രവർത്തനം ചേർക്കുക</span>
-            <span class="add-icon">+</span>
-        </div>
+    <div class="add-bar" onclick="add()" id="addTxt">
+        പുതിയ പ്രവർത്തനം ചേർക്കുക +
+    </div>
 
-        <div id="activityList">
-            <div class="activity-item">
-                <div class="left-part">
-                    <span class="book-icon">📖</span> <span class="activity-name">വായന</span>
-                </div>
-                <div class="right-part">
-                    <span class="action-icon notification-btn">🔔</span> <span class="action-icon sound-btn">🔊</span> <div class="dropdown-part">
-                        <span class="dropdown-text">everyday</span>
-                        <span class="action-icon dropdown-arrow">∨</span>
-                    </div>
-                    <span class="action-icon delete-btn trash-icon">🗑️</span> </div>
-            </div>
-            <div class="activity-item">
-                <div class="left-part">
-                    <span class="book-icon">🙏</span> <span class="activity-name">പ്രാർത്ഥന</span>
-                </div>
-                <div class="right-part">
-                    <span class="action-icon notification-btn">🔔</span> <span class="action-icon sound-btn">🔊</span> <div class="dropdown-part">
-                        <span class="dropdown-text">everyday</span>
-                        <span class="action-icon dropdown-arrow">∨</span>
-                    </div>
-                    <span class="action-icon delete-btn trash-icon">🗑️</span> </div>
+    <div id="list">
+        <div class="activity-item">
+            <div class="left"><span>📖</span> <span>വായന</span></div>
+            <div class="right">
+                <span class="active-icon" onclick="this.className=(this.className=='active-icon'?'inactive-icon':'active-icon')">🔔</span>
+                <span class="active-icon" onclick="this.className=(this.className=='active-icon'?'inactive-icon':'active-icon')">🔊</span>
+                <div class="everyday">everyday <span>∨</span></div>
+                <span class="delete-icon" onclick="this.closest('.activity-item').remove()">🗑️</span>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const addBtn = document.getElementById('addActivityBtn');
-            const activityList = document.getElementById('activityList');
+<script>
+    const dictionary = {
+        ml: { title: "Activity Hub", add: "പുതിയ പ്രവർത്തനം ചേർക്കുക +", p1: "പ്രവർത്തനം:", p2: "ഇമോജി:" },
+        en: { title: "Activity Hub", add: "Add New Activity +", p1: "Activity Name:", p2: "Emoji:" }
+    };
 
-            // 1. പുതിയ പ്രവർത്തനം ചേർക്കാൻ വേണ്ട സംഭാഷണ പെട്ടി (Popup)
-            addBtn.addEventListener('click', function() {
-                const activityName = prompt("പ്രവർത്തനത്തിന്റെ പേര് ടൈപ്പ് ചെയ്യുക:");
-                const iconSymbol = prompt("ഇതിന് വേണ്ട ഐക്കൺ ടൈപ്പ് ചെയ്യുക (Eg: ✍️, ⚽, 📚):", "📚");
+    function updateLang() {
+        let l = document.getElementById('lang').value;
+        document.getElementById('title').innerText = dictionary[l].title;
+        document.getElementById('addTxt').innerText = dictionary[l].add;
+    }
 
-                if (activityName) {
-                    addActivityToList(activityName, iconSymbol);
-                }
-            });
+    function add() {
+        let l = document.getElementById('lang').value;
+        let n = prompt(dictionary[l].p1);
+        if(!n) return;
+        let i = prompt(dictionary[l].p2, "📝");
 
-            // 2. പുതിയ പ്രവർത്തനം ലിസ്റ്റിലേക്ക് ചേർക്കുന്ന ഫങ്ക്ഷൻ
-            function addActivityToList(name, icon) {
-                const newItem = document.createElement('div');
-                newItem.className = 'activity-item';
-                
-                newItem.innerHTML = `
-                    <div class="left-part">
-                        <span class="book-icon">${icon}</span> 
-                        <span class="activity-name">${name}</span>
-                    </div>
-                    <div class="right-part">
-                        <span class="action-icon notification-btn" onclick="toggleIcon(this)">🔔</span> 
-                        <span class="action-icon sound-btn" onclick="toggleIcon(this)">🔊</span> 
-                        <div class="dropdown-part">
-                            <span class="dropdown-text">everyday</span>
-                            <span class="action-icon dropdown-arrow">∨</span>
-                        </div>
-                        <span class="action-icon delete-btn trash-icon" onclick="deleteItem(this)">🗑️</span> 
-                    </div>
-                `;
-                
-                activityList.appendChild(newItem);
-            }
-        });
-
-        // 3. ബെൽ, സൗണ്ട് ഐക്കണുകൾ അമർത്തുമ്പോൾ നിറം മാറ്റാൻ
-        function toggleIcon(icon) {
-            if (icon.style.opacity === "0.5") {
-                icon.style.opacity = "1";
-            } else {
-                icon.style.opacity = "0.5";
-            }
-        }
-
-        // 4. ഡിലീറ്റ് (ചവറ്റുകുട്ട) ഐക്കൺ അമർത്തുമ്പോൾ വരി ഒഴിവാക്കാൻ
-        function deleteItem(trashBtn) {
-            const itemToDelete = trashBtn.closest('.activity-item');
-            if (confirm("ഈ പ്രവർത്തനം ലിസ്റ്റിൽ നിന്ന് ഒഴിവാക്കട്ടെ?")) {
-                itemToDelete.remove();
-            }
-        }
-    </style>
+        let div = document.createElement('div');
+        div.className = 'activity-item';
+        div.innerHTML = `
+            <div class="left"><span>${i}</span> <span>${n}</span></div>
+            <div class="right">
+                <span class="active-icon" onclick="this.className=(this.className=='active-icon'?'inactive-icon':'active-icon')">🔔</span>
+                <span class="active-icon" onclick="this.className=(this.className=='active-icon'?'inactive-icon':'active-icon')">🔊</span>
+                <div class="everyday">everyday <span>∨</span></div>
+                <span class="delete-icon" onclick="this.closest('.activity-item').remove()">🗑️</span>
+            </div>`;
+        document.getElementById('list').appendChild(div);
+    }
+</script>
 </body>
 </html>
