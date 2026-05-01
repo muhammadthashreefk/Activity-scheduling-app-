@@ -24,21 +24,19 @@
         .header-icons { display: flex; gap: 15px; align-items: center; }
         .lang-select { padding: 5px; border-radius: 8px; border: 1px solid #ccc; background: white; font-size: 12px; }
         
-        /* മെനു സ്റ്റൈൽ */
+        /* Menu */
         .menu-dropdown {
             display: none; position: absolute; right: 25px; top: 60px;
             background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            z-index: 100; min-width: 120px;
+            z-index: 100; min-width: 130px;
         }
         .menu-dropdown div { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; }
         .menu-dropdown div:last-child { border-bottom: none; }
-        .menu-dropdown div:hover { background: #f5f5f5; }
 
         .add-bar {
             background-color: var(--green-btn); color: var(--text-main);
             padding: 15px; border-radius: 20px; display: flex; justify-content: center;
-            align-items: center; cursor: pointer; margin-bottom: 20px; font-weight: bold;
-            font-size: 18px;
+            align-items: center; cursor: pointer; margin-bottom: 20px; font-weight: bold; font-size: 18px;
         }
         .activity-item {
             background: white; margin-bottom: 12px; padding: 15px;
@@ -49,7 +47,12 @@
         .activity-info { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; color: var(--text-main); }
         .time-row { display: flex; align-items: center; gap: 8px; }
         .time-tag { font-size: 12px; color: white; background: #666; padding: 2px 10px; border-radius: 10px; }
-        .everyday-tag { font-size: 12px; color: #888; }
+        
+        /* Day Selector */
+        .day-select { 
+            font-size: 12px; color: #888; border: none; background: transparent; 
+            cursor: pointer; outline: none; appearance: none;
+        }
         
         .right { display: flex; align-items: center; gap: 12px; }
         .delete-icon { color: #8F6A6D; cursor: pointer; font-size: 20px; }
@@ -74,8 +77,8 @@
     </div>
 
     <div id="menuBox" class="menu-dropdown">
-        <div onclick="alert('Reporting...')">Report</div>
-        <div onclick="alert('Opening Feedback...')">Feedback</div>
+        <div onclick="sendFeedback('Report')">Report</div>
+        <div onclick="sendFeedback('Feedback')">Feedback</div>
     </div>
 
     <div class="add-bar" onclick="add()" id="addTxt">
@@ -87,26 +90,30 @@
 
 <script>
     const dictionary = {
-        ml: { title: "Activity Hub", add: "പുതിയ പ്രവർത്തനം ചേർക്കുക +", p1: "പ്രവർത്തനം:", p2: "സമയം:", p3: "ഇമോജി:", del: "ഇത് ഒഴിവാക്കട്ടെ?" },
-        en: { title: "Activity Hub", add: "Add Activity +", p1: "Activity Name:", p2: "Time:", p3: "Emoji:", del: "Remove this?" },
-        ar: { title: "مركز النشاط", add: "+ إضافة نشاط", p1: "النشاط:", p2: "الوقت:", p3: "رمز:", del: "حذف؟" }
+        ml: { title: "Activity Hub", add: "പുതിയ പ്രവർത്തനം ചേർക്കുക +", p1: "പ്രവർത്തനം:", p2: "സമയം:", p3: "ഇമോജി:", del: "ഇത് ഒഴിവാക്കട്ടെ?", days: ["എല്ലാ ദിവസവും", "തിങ്കൾ", "ചൊവ്വ", "ബുധൻ", "വ്യാഴം", "വെള്ളി", "ശനി", "ഞായർ"] },
+        en: { title: "Activity Hub", add: "Add Activity +", p1: "Activity:", p2: "Time:", p3: "Emoji:", del: "Remove?", days: ["Everyday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] },
+        ar: { title: "مركز النشاط", add: "+ إضافة نشاط", p1: "النشاط:", p2: "الوقت:", p3: "رمز:", del: "حذف؟", days: ["كل يوم", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"] }
     };
 
-    // ആപ്പ് ലോഡ് ചെയ്യുമ്പോൾ ഡാറ്റ എടുക്കുക
-    window.onload = function() {
-        loadData();
-    };
+    window.onload = loadData;
 
     function updateLang() {
         let l = document.getElementById('lang').value;
         document.getElementById('title').innerText = dictionary[l].title;
         document.getElementById('addTxt').innerText = dictionary[l].add;
         document.body.style.direction = (l === 'ar') ? 'rtl' : 'ltr';
+        renderList();
     }
 
     function toggleMenu() {
         let m = document.getElementById('menuBox');
         m.style.display = (m.style.display == 'block') ? 'none' : 'block';
+    }
+
+    function sendFeedback(type) {
+        let msg = prompt(type + " അറിയിക്കുക:");
+        if(msg) alert(type + " അയച്ചു: " + msg);
+        toggleMenu();
     }
 
     function add() {
@@ -116,35 +123,36 @@
         let t = prompt(dictionary[l].p2, "09:00 AM");
         let i = prompt(dictionary[l].p3, "📝");
 
-        const activity = { name: n, time: t, emoji: i, bell: true, sound: true };
-        saveToLocal(activity);
-        renderList();
-    }
-
-    function saveToLocal(obj) {
         let data = JSON.parse(localStorage.getItem('myActivities')) || [];
-        data.push(obj);
+        data.push({ name: n, time: t, emoji: i, bell: true, sound: true, dayIndex: 0 });
         localStorage.setItem('myActivities', JSON.stringify(data));
-    }
-
-    function loadData() {
         renderList();
     }
 
     function renderList() {
         let listDiv = document.getElementById('list');
         listDiv.innerHTML = '';
+        let l = document.getElementById('lang').value;
         let data = JSON.parse(localStorage.getItem('myActivities')) || [];
 
         data.forEach((item, index) => {
             let div = document.createElement('div');
             div.className = 'activity-item';
+            
+            // ദിവസങ്ങൾ തിരഞ്ഞെടുക്കാനുള്ള ഡ്രോപ്പ്ഡൗൺ നിർമ്മിക്കുന്നു
+            let dayOptions = dictionary[l].days.map((day, dIdx) => 
+                `<option value="${dIdx}" ${item.dayIndex == dIdx ? 'selected' : ''}>${day}</option>`
+            ).join('');
+
             div.innerHTML = `
                 <div class="left">
                     <div class="activity-info"><span>${item.emoji}</span> <span>${item.name}</span></div>
                     <div class="time-row">
                         <div class="time-tag">${item.time}</div>
-                        <div class="everyday-tag">everyday ∨</div>
+                        <select class="day-select" onchange="updateDay(${index}, this.value)">
+                            ${dayOptions}
+                        </select>
+                        <span style="font-size:10px; color:#888;">∨</span>
                     </div>
                 </div>
                 <div class="right">
@@ -154,6 +162,12 @@
                 </div>`;
             listDiv.appendChild(div);
         });
+    }
+
+    function updateDay(idx, val) {
+        let data = JSON.parse(localStorage.getItem('myActivities'));
+        data[idx].dayIndex = val;
+        localStorage.setItem('myActivities', JSON.stringify(data));
     }
 
     function toggleFeature(index, feature) {
@@ -173,21 +187,16 @@
         }
     }
 
+    function loadData() { renderList(); }
+
     function showHistory() {
         let data = JSON.parse(localStorage.getItem('myActivities')) || [];
-        if(data.length == 0) {
-            alert("ചരിത്രം ലഭ്യമല്ല (History is empty)");
-        } else {
-            let h = data.map(i => i.name + " (" + i.time + ")").join("\n");
-            alert("സേവ് ചെയ്ത വിവരങ്ങൾ:\n" + h);
-        }
+        if(data.length == 0) alert("History empty");
+        else alert("സേവ് ചെയ്തവ:\n" + data.map(i => i.name).join(", "));
     }
 
-    // പുറത്ത് ക്ലിക്ക് ചെയ്താൽ മെനു അടയാൻ
-    window.onclick = function(event) {
-        if (!event.target.matches('.icon-btn')) {
-            document.getElementById('menuBox').style.display = 'none';
-        }
+    window.onclick = function(e) {
+        if (!e.target.matches('.icon-btn')) document.getElementById('menuBox').style.display = 'none';
     }
 </script>
 </body>
